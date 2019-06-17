@@ -22,8 +22,11 @@ class Header extends Component {
           <SearchInfoTitle>
             热门搜索
             <SearchInfoSwitch onClick={() => {
-              handleChangePage(page, totalPage)
-            }}>换一批</SearchInfoSwitch>
+              handleChangePage(page, totalPage, this.spinIcon)
+            }}>
+              <i ref={(icon) => { this.spinIcon = icon }} className="iconfont spin">&#xe606;</i>
+              换一批
+            </SearchInfoSwitch>
           </SearchInfoTitle>
           <SearchInfoList>
             { pageList }
@@ -35,7 +38,7 @@ class Header extends Component {
     }
   }
   render() {
-    const { focused, handleInputFocus, handleInputBlur } = this.props;
+    const { focused, handleInputFocus, handleInputBlur, list } = this.props;
     return (
       <HeaderWrapper>
         <Logo />
@@ -53,9 +56,9 @@ class Header extends Component {
                 in={focused}
                 classNames="slide"
               >
-                <NavSearch onFocus={handleInputFocus} onBlur={handleInputBlur} className={focused ? 'focused' : ''}/>
+                <NavSearch onFocus={() => {handleInputFocus(list)}} onBlur={handleInputBlur} className={focused ? 'focused' : ''}/>
               </CSSTransition>
-              <i className={focused ? 'focused iconfont' : 'iconfont'}>&#xe62d;</i>
+              <i className={focused ? 'focused iconfont zoom' : 'iconfont zoom'}>&#xe62d;</i>
               {this.getListArea()}
             </SearchWrapper>
           </NavItem>
@@ -85,9 +88,9 @@ const mapStateToProps = (state) => {
 }
 const mapDispatchToProps = (dispatch) => {
   return {
-    handleInputFocus() {
-      dispatch(actionCreators.getList())
-      dispatch(actionCreators.searchFocus())
+    handleInputFocus(list) {
+      list.size === 0 && dispatch(actionCreators.getList());
+      dispatch(actionCreators.searchFocus());
     },
     handleInputBlur() {
       dispatch(actionCreators.searchBlur())
@@ -98,7 +101,14 @@ const mapDispatchToProps = (dispatch) => {
     onMouseLeave() {
       dispatch(actionCreators.mouseLeave())
     },
-    handleChangePage(page, totalPage) {
+    handleChangePage(page, totalPage, spin) {
+      let originAngle = spin.style.transform.replace(/[^0-9]/ig, '');
+      if (originAngle) {
+        originAngle = parseInt(originAngle, 10);
+      } else {
+        originAngle = 0;
+      }
+      spin.style.transform = 'rotate('+ originAngle + 360 +'deg)';
       let nextPage = page + 1;
       if (nextPage > totalPage) {
         nextPage = 1;
